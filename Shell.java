@@ -1,5 +1,4 @@
-import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
-
+import greenfoot.*;
 /**
  * Write a description of class Shell here.
  * 
@@ -14,6 +13,9 @@ public class Shell extends Actor
      */
     private Earth earth;
     private Ground ground;
+    private Tank tank;
+    private Tank target_tank;
+    private Nozzle target_nozzle;
     
     /** Physical quantities that will change over time*/
     private int angle;
@@ -36,11 +38,14 @@ public class Shell extends Actor
     
     /** Flight time*/
     private int t = 0;
+    private double timeFactor = 15.0;
     
+    /** Reorient image if necessary*/
     private boolean is_right;
     
-    public Shell(Ground ground,int angle,boolean is_right) {
+    public Shell(Ground ground,Tank parent_tank,int angle,boolean is_right) {
         this.ground = ground;
+        this.tank = parent_tank;
         this.angle = angle;
         this.is_right = is_right;
         v_iy1 = -65*Math.sin(Math.toRadians(angle));
@@ -67,31 +72,40 @@ public class Shell extends Actor
     }
     
     public boolean checkCollision() {
+        target_tank = (Tank) getOneIntersectingObject(Tank.class);
+        target_nozzle = (Nozzle) getOneIntersectingObject(Nozzle.class);
         //System.out.println("Y:" + getY() + " Rel Y:" + theGround.getRelativeY(getX()));
         if (getY() >= ground.getRelativeY(getX()) || getX() == 0  || getX() == 599) {
             earth.addObject(new Boom(), getX(),getY());
             earth.removeObject(this);
             return true;
+        } else if (target_tank != null && target_tank != tank 
+                && target_nozzle != null && target_nozzle != tank.getNozzle()) {
+                earth.addObject(new Boom(), getX(),getY());
+                earth.removeObject(target_tank);
+                earth.removeObject(target_nozzle);
+                earth.removeObject(this);
         }
-        else return false;
-    }
+        return false;
+    }   
+    
     
     public void move() {
-        System.out.println(getX());
+        //System.out.println(getX());
         setRotation((int)getSlope());
         setLocation((int)calcXPos(),(int)calcYPos());
     }
     
     public double calcYPos()  {
-        return 0.5*a_y*Math.pow(t/30.0,2) + v_iy1*(t/30.0) + y_i;
+        return 0.5*a_y*Math.pow(t/timeFactor,2) + v_iy1*(t/timeFactor) + y_i;
     }
     
     public double calcXPos() {
-        return v_x*(t/30.0) + x_i;
+        return v_x*(t/timeFactor) + x_i;
     }
     
     public double getSlope() {
-        v_y = a_y*(t/30.0) + v_iy1; //need to flip b/c y is flipped
+        v_y = a_y*(t/timeFactor) + v_iy1; //need to flip b/c y is flipped
         if(!is_right) v_y *= -1;
         return v_y;
     } 

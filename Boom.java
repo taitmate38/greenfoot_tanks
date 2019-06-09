@@ -15,8 +15,11 @@ public class Boom extends Actor
     private GifImage gif;
     private SimpleTimer timer;
     
+    private Tank target_tank;
+    private Nozzle target_nozzle;
+    
     public Boom() {
-        gif = new GifImage("boom.gif");
+        gif = new GifImage("boom2.gif");
         timer = new SimpleTimer();
         timer.mark();
     }
@@ -24,11 +27,18 @@ public class Boom extends Actor
     public void act() 
     {
         setImage(gif.getCurrentImage());
-        if (timer.millisElapsed() > 790) {
+        if (timer.millisElapsed() > 1590) {
             earth.removeObject(this);
         }
     }   
     
+    // public void harmThings() {
+        // target_tank = (Tank) getOneIntersectingObject(Tank.class);
+        // target_nozzle = (Nozzle) getOneIntersectingObject(Nozzle.class);
+        // if (target_tank != null || target_nozzle != null) {
+            // System.out.println("Tank has been damaged!");
+        // }
+    // }
     
     public void addedToWorld(World world) 
     { 

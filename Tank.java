@@ -24,14 +24,16 @@ public class Tank extends Actor
     private int yPos;
     
     private double vel;
-    private double speedFactor = 10.0;
+    private double speedFactor = 4.0;
     
-    private int maxSpeed = 20;
+    private int maxSpeed = 5;
     private double friction;
     
     private int angle;
     
     private int shotCounter;
+    private int shotGap = 30;
+    
     private boolean is_right = false;
     
     String left = "left";
@@ -61,7 +63,8 @@ public class Tank extends Actor
     {
         if(is_right) angleNozzle2();
         else angleNozzle();
-        shoot();
+        changeShotCounter();
+        if (Greenfoot.isKeyDown(fire)) shoot();
         accelerate();
         movePath();
         applyFriction();
@@ -71,7 +74,7 @@ public class Tank extends Actor
     public void accelerate() {
        move_left = Greenfoot.isKeyDown(left);
        move_right = Greenfoot.isKeyDown(right); 
-       if (move_left || move_right && vel < maxSpeed) {
+       if (move_left || move_right && Math.abs(vel) < maxSpeed) {
            if (move_right) vel++;
            if (move_left) vel--;
        }
@@ -82,7 +85,9 @@ public class Tank extends Actor
             xPos += (int)(vel / speedFactor);
             yPos = ground.getShiftRelY(xPos,15);
             setLocations(xPos,yPos);
-        } else vel *= -1;
+        } else {
+            vel *= -1;
+        }
     }
     
     public void applyFriction() {
@@ -115,18 +120,23 @@ public class Tank extends Actor
         }
     }
     
-    public void shoot() {
-        
-        if (Greenfoot.isKeyDown(fire) && shotCounter == 0) {
-            if (angle < 47) earth.addObject(new Shell(ground,angle,is_right),getX(),getY() - 6);
-            if (angle > 47) earth.addObject(new Shell(ground,angle,is_right),getX(),getY() - 14);
-            shotCounter++;
-        }
+    public void changeShotCounter() {
         if (shotCounter > 0) {
-            if (shotCounter < 30) shotCounter++; 
-            else if (shotCounter ==  30) shotCounter = 0;
+            if (shotCounter < shotGap) shotCounter++; 
+            else if (shotCounter ==  shotGap) shotCounter = 0;
         }
     }
+    
+    public void shoot() {
+        
+        if (shotCounter == 0) {
+            if (angle < 47) earth.addObject(new Shell(ground,this,angle,is_right),getX(),getY() - 6);
+            if (angle > 47) earth.addObject(new Shell(ground,this,angle,is_right),getX(),getY() - 14);
+            shotCounter++;
+        }
+    }
+    
+    public void resetShot() {shotCounter = 0;}
     
     public void addedToWorld(World world) {
         earth = (Earth) world;
@@ -138,4 +148,6 @@ public class Tank extends Actor
         setLocation(x,y);
         nozzle.setLocation(x,y);
     }
+    
+    public Nozzle getNozzle() {return nozzle;}
 }
